@@ -46,17 +46,20 @@ def _get_or_set_cache(key,url,is_cache_hit=False):
     return response, status.HTTP_200_OK
 
 @api_view(['GET',])
-def get_ifsc(request, id):
+def ifsc(request, id):
     response, status = _get_or_set_cache(id,url_maps["ifsc"] + id)
-    logger.debug("%s cache hits : %s, %s api hits %s",id,str(api_cache.get("hits_" + id)), id, str(api_cache.get("hits_api_" + id)))
+    logger.debug("Hit counts : %s cache hits : %s, %s api hits %s",id,str(api_cache.get("hits_" + id)), id, str(api_cache.get("hits_api_" + id)))
+    logger.info("%s -> %s", request.path_info, response.__str__())
     return Response(response,status=status)
 
 @api_view(['GET'])
 def leaderboard(request):
     response, status = _get_or_set_cache("leaderboard",url_maps["leaderboard"])
+    logger.info("%s -> %s", request.path_info, response.__str__())
     return Response(response,status=status)
  
 @api_view(['GET',])
 def statistics(request):
     response, status = _get_or_set_cache("statistics",url_maps["statistics"])
+    logger.info("%s -> %s", request.path_info, response.__str__())
     return Response(response,status=status)

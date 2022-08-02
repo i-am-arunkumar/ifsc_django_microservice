@@ -3,8 +3,8 @@ from rest_framework import routers
 from . import views
 
 urlpatterns = [
-    path('ifsc/<str:id>/', views.get_ifsc),
-    path('leaderboard/', views.leaderboard),
-    path('statistics/',views.statistics),
+    path('ifsc/<str:id>/', views.ifsc, name="ifsc" ),
+    path('leaderboard/', views.leaderboard, name="leaderboard"),
+    path('statistics/',views.statistics, name="statistics"),
     path('api-auth/', include('rest_framework.urls')),
 ]

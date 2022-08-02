@@ -14,7 +14,7 @@ class IFSCTestCase(APITestCase):
         api_hit = cache.get("hits_api_SBIN0000002")
         result = response.data["result"]
         assert response.status_code == 200
-        assert api_hit == "1"
+        assert api_hit == 1
         assert result["ifsc"] == "SBIN0000002"
         assert result["bank"] == "STATE BANK OF INDIA"
         assert result["micr_code"] == "799002002"
@@ -29,8 +29,8 @@ class IFSCTestCase(APITestCase):
         api_hit = cache.get("hits_api_SBIN0000002")
         cache_hit = cache.get("hits_SBIN0000002")
         result = response.data["result"]
-        assert api_hit == "1"
-        assert cache_hit == "1"
+        assert api_hit == 1
+        assert cache_hit == 1
         assert response.status_code == 200
         assert result["ifsc"] == "SBIN0000002"
         assert result["bank"] == "STATE BANK OF INDIA"
@@ -50,15 +50,15 @@ class IFSCTestCase(APITestCase):
         response = self.client.get(url)
         api_hit = cache.get("hits_api_leaderboard")
         assert response.status_code == 200
-        assert api_hit == "1"
+        assert api_hit == 1
 
         #second hit
         response = self.client.get(url)
         api_hit = cache.get("hits_api_leaderboard")
         cache_hit = cache.get("hits_leaderboard")
         assert response.status_code == 200
-        assert api_hit == "1"
-        assert cache_hit == "1"
+        assert api_hit == 1
+        assert cache_hit == 1
         
         
 
@@ -70,13 +70,13 @@ class IFSCTestCase(APITestCase):
         response = self.client.get(url)
         api_hit = cache.get("hits_api_statistics")
         assert response.status_code == 200
-        assert api_hit == "1"
+        assert api_hit == 1
 
         #second hit
         response = self.client.get(url)
         api_hit = cache.get("hits_api_statistics")
         cache_hit = cache.get("hits_statistics")
         assert response.status_code == 200
-        assert api_hit == "1"
-        assert cache_hit == "1"
+        assert api_hit == 1
+        assert cache_hit == 1
         
