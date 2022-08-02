@@ -22,20 +22,32 @@ def _increment_hit_count(key, prefix="hits_"):
     cur_count = api_cache.get_or_set(incr_key,0)
     api_cache.set(incr_key,int(cur_count) + 1)
 
-def _fetch(url) :
-    res = requests.get(url)
+def _fetch(url,params={}) :
+    query_params = ""
+    if(len(params) != 0):
+        query_params = "?"
+        for key,value in params.items():
+            query_params += f"{key}={value}&" 
+    logger.info("requesting : %s", url + query_params)
+    res = requests.get(url + query_params)
     res.raise_for_status()
     if(res.status_code == 200):
         return res.json()
 
-def _get_or_set_cache(key,url,is_cache_hit=False):
+def _get_filter_suffix(request):
+    filter_suffix = ""
+    if request.GET is not None:
+        for val in request.query_params.values():
+            filter_suffix += "_" + val
+    return filter_suffix
+
+def _get_or_set_cache(key,url,params={}):
     response = api_cache.get(key)
     if(response is None):
-        response = _fetch(url)
         try:
-            response = _fetch(url)
-        except requests.exceptions.HTTPError as e:
-            logger.error("database server is not running.")
+            response = _fetch(url, params=params)
+        except Exception as e:
+            logger.error("main server is down/not reachable")
             return {
                 "result" : "Internal server error"
             }, status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -45,21 +57,30 @@ def _get_or_set_cache(key,url,is_cache_hit=False):
         _increment_hit_count(key)
     return response, status.HTTP_200_OK
 
+def _logs(id,url,response):
+    logger.info("Hit counts : %s cache hits : %s, %s api hits %s",id,str(api_cache.get("hits_" + id)), id, str(api_cache.get("hits_api_" + id)))
+    logger.debug("%s -> %s",url, response)
+
 @api_view(['GET',])
 def ifsc(request, id):
     response, status = _get_or_set_cache(id,url_maps["ifsc"] + id)
-    logger.debug("Hit counts : %s cache hits : %s, %s api hits %s",id,str(api_cache.get("hits_" + id)), id, str(api_cache.get("hits_api_" + id)))
-    logger.info("%s -> %s", request.path_info, response.__str__())
+    _logs(id, request.path_info,response.__str__())
     return Response(response,status=status)
 
 @api_view(['GET'])
 def leaderboard(request):
-    response, status = _get_or_set_cache("leaderboard",url_maps["leaderboard"])
-    logger.info("%s -> %s", request.path_info, response.__str__())
+    cache_key = "leaderboard" + _get_filter_suffix(request)
+    response, status = _get_or_set_cache(
+        cache_key,
+        url_maps["leaderboard"])
+    _logs(cache_key, request.path_info,response.__str__())
     return Response(response,status=status)
  
 @api_view(['GET',])
 def statistics(request):
-    response, status = _get_or_set_cache("statistics",url_maps["statistics"])
-    logger.info("%s -> %s", request.path_info, response.__str__())
+    cache_key = "statistics" + _get_filter_suffix(request)
+    response, status = _get_or_set_cache(
+        cache_key,
+        url_maps["statistics"], params=request.GET)
+    _logs(cache_key, request.path_info,response.__str__())
     return Response(response,status=status)
